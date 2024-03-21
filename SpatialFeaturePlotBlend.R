@@ -1,5 +1,7 @@
 SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
-                                    combine = TRUE)  {
+                                    combine = TRUE, column_1_alt_name = NULL,
+                                    column_2_alt_name = NULL, assay = NULL,
+                                    ...)  {
 
     # Convert decimal number to hexadecimal. Pad with 0s if only a single
     # character following conversion.
@@ -30,6 +32,10 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
               })
     }
 
+    if (!is.null(assay)) {
+        DefaultAssay(cells_obj) <- assay
+    }
+
     blend_plot_theme <- theme(legend.position = "none",
                               plot.title = element_text(hjust = 0.5))
 
@@ -37,7 +43,7 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
                         function(column) {
                             max_color <- ifelse(column == column_1,
                                                 "#FF0000", "#00FF00")
-                            SpatialFeaturePlot(cells_obj, column) +
+                            SpatialFeaturePlot(cells_obj, column, ...) +
                                 scale_fill_gradient(low = "#000000",
                                                     high = max_color) +
                                 ggtitle(column) +
@@ -51,7 +57,8 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
     cells_obj[[new_md_column]] <- colors
     names(colors) <- as.character(colors)
 
-    plot_list[[3]] <- SpatialDimPlot(cells_obj, new_md_column, cols = colors) +
+    plot_list[[3]] <- SpatialDimPlot(cells_obj, new_md_column,
+                                     cols = colors, ...) +
                         ggtitle(paste0(column_1, "_", column_2)) +
                         blend_plot_theme
 
@@ -74,7 +81,9 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
                 scale_color_manual(values = legend_colors) +
                 coord_cartesian(expand = FALSE) +
                 theme(legend.position = "none", aspect.ratio = 1,
-                      panel.background = element_blank())
+                      panel.background = element_blank()) +
+                xlab(ifelse(is.null(column_1_alt_name), column_1, column_1_alt_name)) +
+                ylab(ifelse(is.null(column_2_alt_name), column_2, column_2_alt_name))
 
     plot_list[[4]] <- wrap_plots(ggplot() + theme_void(), legend,
                                  ggplot() + theme_void(), ncol = 1,
