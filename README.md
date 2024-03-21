@@ -24,6 +24,41 @@ SpatialFeaturePlotBlend(brain, "Hpca", "Ttr")
 
 ![Example of SpatialFeaturePlotBlend plot using mouse brain sample](images/SpatialFeaturePlotBlend_single_sample_example.png "SpatialFeaturePlotBlend example")
 
+## Other options
+
+### Multiple images
+
+A `Seurat` object containing multiple images can be used as follows:
+
+```R
+# brain_merged has two images: anterior1 and posterior1
+SpatialFeaturePlotBlend(brain_merged, "Hpca", "Ttr")
+```
+
+![Example of SpatialFeaturePlotBlend plot using mouse brain sample with multiple images](images/SpatialFeaturePlotBlend_multi_sample_example_sct_assay.png "SpatialFeaturePlotBlend example with multiple images")
+
+### Non-default assays
+
+Non-default assays can be plotted using the `assay` argument:
+
+```R
+SpatialFeaturePlotBlend(brain, "Hpca", "Ttr", assay = "Spatial")
+```
+
+![Example of SpatialFeaturePlotBlend plot using mouse brain sample and Spatial assay](images/SpatialFeaturePlotBlend_single_sample_example_spatial_assay.png "SpatialFeaturePlotBlend example with Spatial assay")
+
+### Alternative feature names
+
+Alternative names for `column_1` and `column_2` can be passed as
+`column_1_alt_name` and `column_2_alt_name`, respectively. Currently, these
+alternative names are only used in labelling the legend.
+
+```R
+SpatialFeaturePlotBlend(brain, "Hpca", "Ttr", column_1_alt_name = "Hpca_alias")
+```
+
+![Example of SpatialFeaturePlotBlend plot using mouse brain sample with alternative column name](images/SpatialFeaturePlotBlend_single_sample_example_alt_name.png "SpatialFeaturePlotBlend example with alternative column name")
+
 ## Licensing
 
 <details>
