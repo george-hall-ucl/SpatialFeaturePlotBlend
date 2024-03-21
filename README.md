@@ -19,7 +19,7 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 
-SpatialFeaturePlotBlend(brain, "Hpca", "Ttr")
+SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"))
 ```
 
 ![Example of SpatialFeaturePlotBlend plot using mouse brain sample](images/SpatialFeaturePlotBlend_single_sample_example.png "SpatialFeaturePlotBlend example")
@@ -32,32 +32,61 @@ A `Seurat` object containing multiple images can be used as follows:
 
 ```R
 # brain_merged has two images: anterior1 and posterior1
-SpatialFeaturePlotBlend(brain_merged, "Hpca", "Ttr")
+SpatialFeaturePlotBlend(object = brain_merged, features = c("Hpca", "Ttr"))
 ```
 
 ![Example of SpatialFeaturePlotBlend plot using mouse brain sample with multiple images](images/SpatialFeaturePlotBlend_multi_sample_example_sct_assay.png "SpatialFeaturePlotBlend example with multiple images")
+
+Notes:
+
+* The color scales of each image are independent.
+* `SpatialFeaturePlotBlend` assumes that the spots in the data of `object` are
+  grouped together in the same order as the image names in `Images(object)` (as
+  should happen following `merge`).  If this assumption is violated, then
+  strange things might happen...
 
 ### Non-default assays
 
 Non-default assays can be plotted using the `assay` argument:
 
 ```R
-SpatialFeaturePlotBlend(brain, "Hpca", "Ttr", assay = "Spatial")
+SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                        assay = "Spatial")
 ```
 
 ![Example of SpatialFeaturePlotBlend plot using mouse brain sample and Spatial assay](images/SpatialFeaturePlotBlend_single_sample_example_spatial_assay.png "SpatialFeaturePlotBlend example with Spatial assay")
 
 ### Alternative feature names
 
-Alternative names for `column_1` and `column_2` can be passed as
-`column_1_alt_name` and `column_2_alt_name`, respectively. Currently, these
+Alternative names for `feature_1` and `feature_2` can be passed as
+`feature_1_alt_name` and `feature_2_alt_name`, respectively. Currently, these
 alternative names are only used in labelling the legend.
 
 ```R
-SpatialFeaturePlotBlend(brain, "Hpca", "Ttr", column_1_alt_name = "Hpca_alias")
+SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                        feature_1_alt_name = "Hpca_alias")
 ```
 
-![Example of SpatialFeaturePlotBlend plot using mouse brain sample with alternative column name](images/SpatialFeaturePlotBlend_single_sample_example_alt_name.png "SpatialFeaturePlotBlend example with alternative column name")
+![Example of SpatialFeaturePlotBlend plot using mouse brain sample with alternative feature name](images/SpatialFeaturePlotBlend_single_sample_example_alt_name.png "SpatialFeaturePlotBlend example with alternative feature name")
+
+### Additional arguments
+
+Additional arguments can be passed to the underlying plotting functions. For
+example, we can change `alpha`:
+
+```R
+SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                        alpha = 0.5)
+```
+
+![Example of SpatialFeaturePlotBlend plot with alpha = 0.5](images/SpatialFeaturePlotBlend_single_sample_example_alpha.png "SpatialFeaturePlotBlend example with alpha = 0.5")
+
+## Bugs
+
+There are probably bugs in this implementation and it has not been rigorously
+tested, so please use at your own risk! If you do identify a bug, please submit
+it as an issue
+[here](https://github.com/george-hall-ucl/SpatialFeaturePlotBlend/issues).
 
 ## Licensing
 

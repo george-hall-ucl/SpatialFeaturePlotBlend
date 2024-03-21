@@ -1,6 +1,6 @@
-SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
-                                    combine = TRUE, column_1_alt_name = NULL,
-                                    column_2_alt_name = NULL, assay = NULL,
+SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
+                                    feature_1_alt_name = NULL,
+                                    feature_2_alt_name = NULL, assay = NULL,
                                     ...)  {
     # Convert decimal number to hexadecimal. Pad with 0s if only a single
     # character following conversion.
@@ -31,8 +31,14 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
               })
     }
 
+    if (length(features) != 2) {
+        stop(paste(c("Incorrect number of features. ",
+                     "Requires two features, received ",
+                     length(features))))
+    }
+
     if (!is.null(assay)) {
-        DefaultAssay(cells_obj) <- assay
+        DefaultAssay(object) <- assay
     }
 
     blend_plot_theme <- theme(legend.position = "none",
@@ -40,53 +46,52 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
 
     plot_list_outer <- list()
 
-    cells_obj$image_id <- unlist(lapply(Images(cells_obj),
+    object$image_id <- unlist(lapply(Images(object),
                                         function(x) {
-                                            rep(x,
-                                                nrow(cells_obj[[x]]@coordinates))
+                                            rep(x, nrow(object[[x]]@coordinates))
                                         }))
 
 
-    for (i in Images(cells_obj)) {
-        plot_list <- lapply(c(column_1, column_2),
-                            function(column) {
-                                max_color <- ifelse(column == column_1,
+    for (i in Images(object)) {
+        plot_list <- lapply(features,
+                            function(feature) {
+                                max_color <- ifelse(feature == features[1],
                                                     "#FF0000", "#00FF00")
-                                SpatialFeaturePlot(cells_obj, column,
+                                SpatialFeaturePlot(object, feature,
                                                    images = i, ...) +
                                     scale_fill_gradient(low = "#000000",
                                                         high = max_color) +
-                                    ggtitle(column) +
+                                    ggtitle(feature) +
                                     blend_plot_theme
                             })
 
-        cells_obj_sub <- subset(cells_obj, image_id == i)
-        dat <- FetchData(cells_obj_sub, c(column_1, column_2))
+        cells_obj_sub <- subset(object, image_id == i)
+        dat <- FetchData(cells_obj_sub, features)
         colors <- as.matrix(dat) %>% metadata_to_hexadecimal()
 
-        new_md_column <- paste0(column_1, "_vs_", column_2)
+        new_md_column <- paste0(features[1], "_vs_", features[2])
         cells_obj_sub[[new_md_column]] <- colors
         names(colors) <- as.character(colors)
 
         plot_list[[3]] <- SpatialDimPlot(cells_obj_sub, new_md_column,
                                          cols = colors, images = i, ...) +
-                            ggtitle(paste0(column_1, "_", column_2)) +
+                            ggtitle(paste0(features[1], "_", features[2])) +
                             blend_plot_theme
 
         side_length <- 100
-        legend_grid <- expand.grid(seq(from = min(dat[, column_1]),
-                                       to = max(dat[, column_1]),
+        legend_grid <- expand.grid(seq(from = min(dat[, features[1]]),
+                                       to = max(dat[, features[1]]),
                                        length.out = side_length),
-                                   seq(from = min(dat[, column_2]),
-                                       to = max(dat[, column_2]),
+                                   seq(from = min(dat[, features[2]]),
+                                       to = max(dat[, features[2]]),
                                        length.out = side_length))
-        colnames(legend_grid) <- c(column_1, column_2)
+        colnames(legend_grid) <- features
         legend_colors <- metadata_to_hexadecimal(legend_grid)
         legend_grid$color <- legend_colors
         names(legend_colors) <- legend_colors
 
         legend <- ggplot(legend_grid,
-                         aes(x = .data[[column_1]], y = .data[[column_2]],
+                         aes(x = .data[[features[1]]], y = .data[[features[2]]],
                              color = color)) +
                     geom_point(shape = 15, size = 1.9) +
                     scale_color_manual(values = legend_colors) +
@@ -94,8 +99,10 @@ SpatialFeaturePlotBlend <- function(cells_obj, column_1, column_2,
                     theme(legend.position = "none", aspect.ratio = 1,
                           panel.background = element_blank(),
                           axis.text.x = element_text(angle = 45, hjust = 1)) +
-                    xlab(ifelse(is.null(column_1_alt_name), column_1, column_1_alt_name)) +
-                    ylab(ifelse(is.null(column_2_alt_name), column_2, column_2_alt_name))
+                    xlab(ifelse(is.null(feature_1_alt_name),
+                                features[1], feature_1_alt_name)) +
+                    ylab(ifelse(is.null(feature_2_alt_name),
+                                features[2], feature_2_alt_name))
 
         plot_list[[4]] <- wrap_plots(ggplot() + theme_void(), legend,
                                      ggplot() + theme_void(), ncol = 1,
