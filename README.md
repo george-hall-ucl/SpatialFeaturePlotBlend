@@ -26,6 +26,18 @@ SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"))
 
 ## Other options
 
+### Custom colors
+
+You can choose which colors to use by specifying them as follows:
+
+```R
+    SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                            top_left = "blue", bottom_right = "orange",
+                            bottom_left = "white", top_right = "#FF0000")
+```
+
+![Example of SpatialFeaturePlotBlend plot using mouse brain sample with custom colors](images/SpatialFeaturePlotBlend_custom_colors.png "SpatialFeaturePlotBlend example with custom colors")
+
 ### Multiple images
 
 A `Seurat` object containing multiple images can be used as follows:

@@ -1,34 +1,32 @@
 SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                     feature_1_alt_name = NULL,
                                     feature_2_alt_name = NULL, assay = NULL,
-                                    ...)  {
-    # Convert decimal number to hexadecimal. Pad with 0s if only a single
-    # character following conversion.
-    as_hex <- function(num) {
-        hex_str <- as.character(as.hexmode(num))
-        if (nchar(hex_str) == 1) {
-            hex_str <- paste0("0", hex_str)
+                                    bottom_left = "#000000",
+                                    bottom_right = "#FF0000",
+                                    top_left = "#00FF00",
+                                    top_right = "#FFFF00", ...)  {
+
+    # Generate a grid of RGB color values given the requested corner colours.
+    gen_color_grid <- function(side_length, bottom_left, bottom_right,
+                               top_left, top_right) {
+
+        grad_gen <- function(start, end, n = side_length) {
+            colfunc <- colorRampPalette(c(start, end))
+            return(colfunc(n))
         }
 
-        return(hex_str)
-    }
+        # x_y = "x to y"; "bl" = "bottom left", etc
+        bl_tl <- grad_gen(bottom_left, bottom_right)
+        br_tr <- grad_gen(top_left, top_right)
 
-    metadata_to_hexadecimal <- function(in_dat) {
-        apply(in_dat, 2,
-              function(x) {
-                  # Make minimum 0
-                  x - min(x)
-              }) %>%
-        apply(2,
-              function(x) {
-                  # Constrain to range [0, 255]
-                  round(255 * (x / max(x)))
-              }) %>%
-        apply(1,
-              function(x) {
-                  # Convert to hexadecimal codes
-                  toupper(paste0("#", as_hex(x[1]), as_hex(x[2]), "00"))
-              })
+        l <- lapply(seq_len(length(bl_tl)),
+               function(i) {
+                   start <- bl_tl[i]
+                   end <- br_tr[i]
+                   new_grad <- grad_gen(start, end)
+               })
+
+        return(t(matrix(unlist(l), ncol = side_length, nrow = side_length)))
     }
 
     if (length(features) != 2) {
@@ -56,7 +54,7 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
         plot_list <- lapply(features,
                             function(feature) {
                                 max_color <- ifelse(feature == features[1],
-                                                    "#FF0000", "#00FF00")
+                                                    bottom_right, top_left)
                                 SpatialFeaturePlot(object, feature,
                                                    images = i, ...) +
                                     scale_fill_gradient(low = "#000000",
@@ -67,7 +65,17 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
 
         cells_obj_sub <- subset(object, image_id == i)
         dat <- FetchData(cells_obj_sub, features)
-        colors <- as.matrix(dat) %>% metadata_to_hexadecimal()
+        side_length <- 100
+        col_grid <- gen_color_grid(side_length, bottom_left, bottom_right,
+                                   top_left, top_right)
+        dat_norm <- apply(dat, 2,
+                          function(x) {
+                              round((side_length - 1) * x / max(x)) + 1
+                          })
+        colors <- sapply(seq_len(nrow(dat_norm)),
+                       function(x) {
+                           col_grid[dat_norm[x, 1], dat_norm[x, 2]]
+                       })
 
         new_md_column <- paste0(features[1], "_vs_", features[2])
         cells_obj_sub[[new_md_column]] <- colors
@@ -78,7 +86,6 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                             ggtitle(paste0(features[1], "_", features[2])) +
                             blend_plot_theme
 
-        side_length <- 100
         legend_grid <- expand.grid(seq(from = min(dat[, features[1]]),
                                        to = max(dat[, features[1]]),
                                        length.out = side_length),
@@ -86,7 +93,7 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                        to = max(dat[, features[2]]),
                                        length.out = side_length))
         colnames(legend_grid) <- features
-        legend_colors <- metadata_to_hexadecimal(legend_grid)
+        legend_colors <- c(col_grid)
         legend_grid$color <- legend_colors
         names(legend_colors) <- legend_colors
 
