@@ -57,7 +57,7 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                                     bottom_right, top_left)
                                 SpatialFeaturePlot(object, feature,
                                                    images = i, ...) +
-                                    scale_fill_gradient(low = "#000000",
+                                    scale_fill_gradient(low = bottom_left,
                                                         high = max_color) +
                                     ggtitle(feature) +
                                     blend_plot_theme
