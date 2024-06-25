@@ -1,7 +1,8 @@
 # SpatialFeaturePlotBlend
 
-An implementation of Seurat's `SpatialFeaturePlot` that allows the expression
-of two features to be displayed simultaneously and in relation to one another.
+An implementation of Seurat’s `SpatialFeaturePlot` that allows the
+expression of two features to be displayed simultaneously and in
+relation to one another.
 
 ## Code
 
@@ -9,20 +10,26 @@ Available in [SpatialFeaturePlotBlend.R](SpatialFeaturePlotBlend.R).
 
 ## Usage
 
-Using the `brain` dataset from the [Seurat spatial
-vignette](https://satijalab.org/seurat/articles/spatial_vignette), we can use
-`SpatialFeaturePlotBlend` as follows: 
+<details>
+<summary>
+We use the `brain` dataset from the Seurat spatial vignette as an
+example dataset. Click to reveal its processing.
+</summary>
 
-```R
-library(Seurat)
-library(ggplot2)
-library(dplyr)
-library(patchwork)
+    brain <- SeuratData::LoadData("stxBrain", type = "anterior1")
+    brain <- Seurat::SCTransform(brain, assay = "Spatial", verbose = FALSE)
 
-SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"))
-```
+</details>
 
-![Example of SpatialFeaturePlotBlend plot using mouse brain sample](images/SpatialFeaturePlotBlend_single_sample_example.png "SpatialFeaturePlotBlend example")
+    library(Seurat)
+    library(ggplot2)
+    library(dplyr)
+    library(patchwork)
+    source("SpatialFeaturePlotBlend.R")
+
+    SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"))
+
+![](README_files/figure-markdown_strict/basic_plot-1.png)
 
 ## Other options
 
@@ -30,80 +37,84 @@ SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"))
 
 You can choose which colors to use by specifying them as follows:
 
-```R
-    SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
-                            top_left = "blue", bottom_right = "orange",
-                            bottom_left = "white", top_right = "#FF0000")
-```
+        SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                                top_left = "blue", bottom_right = "orange",
+                                bottom_left = "white", top_right = "#FF0000")
 
-![Example of SpatialFeaturePlotBlend plot using mouse brain sample with custom colors](images/SpatialFeaturePlotBlend_custom_colors.png "SpatialFeaturePlotBlend example with custom colors")
+![](README_files/figure-markdown_strict/custom_colors-1.png)
 
 ### Multiple images
 
 A `Seurat` object containing multiple images can be used as follows:
 
-```R
-# brain_merged has two images: anterior1 and posterior1
-SpatialFeaturePlotBlend(object = brain_merged, features = c("Hpca", "Ttr"))
-```
+<details>
+<summary>
+We load another member of the `brain` dataset. Click to reveal its
+processing.
+</summary>
 
-![Example of SpatialFeaturePlotBlend plot using mouse brain sample with multiple images](images/SpatialFeaturePlotBlend_multi_sample_example_sct_assay.png "SpatialFeaturePlotBlend example with multiple images")
+    brain2 <- SeuratData::LoadData("stxBrain", type = "posterior1")
+    brain2 <- Seurat::SCTransform(brain2, assay = "Spatial", verbose = FALSE)
+
+</details>
+
+    brain_merged <- merge(x = brain, y = brain2)
+    SpatialFeaturePlotBlend(object = brain_merged, features = c("Hpca", "Ttr"))
+
+![](README_files/figure-markdown_strict/multiple_images-1.png)
 
 Notes:
 
-* The color scales of each image are independent.
-* `SpatialFeaturePlotBlend` assumes that the spots in the data of `object` are
-  grouped together in the same order as the image names in `Images(object)` (as
-  should happen following `merge`).  If this assumption is violated, then
-  strange things might happen...
+-   The color scales of each image are independent.
+-   `SpatialFeaturePlotBlend` assumes that the spots in the data of
+    `object` are grouped together in the same order as the image names
+    in `Images(object)` (as should happen following `merge`). If this
+    assumption is violated, then strange things might happen…
 
 ### Non-default assays
 
 Non-default assays can be plotted using the `assay` argument:
 
-```R
-SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
-                        assay = "Spatial")
-```
+    SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                            assay = "Spatial")
 
-![Example of SpatialFeaturePlotBlend plot using mouse brain sample and Spatial assay](images/SpatialFeaturePlotBlend_single_sample_example_spatial_assay.png "SpatialFeaturePlotBlend example with Spatial assay")
+![](README_files/figure-markdown_strict/non_default_assays-1.png)
 
 ### Alternative feature names
 
 Alternative names for `feature_1` and `feature_2` can be passed as
-`feature_1_alt_name` and `feature_2_alt_name`, respectively. Currently, these
-alternative names are only used in labelling the legend.
+`feature_1_alt_name` and `feature_2_alt_name`, respectively. Currently,
+these alternative names are only used in labelling the legend.
 
-```R
-SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
-                        feature_1_alt_name = "Hpca_alias")
-```
+    SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                            feature_1_alt_name = "Hpca_alias")
 
-![Example of SpatialFeaturePlotBlend plot using mouse brain sample with alternative feature name](images/SpatialFeaturePlotBlend_single_sample_example_alt_name.png "SpatialFeaturePlotBlend example with alternative feature name")
+![](README_files/figure-markdown_strict/alternative_feature_names-1.png)
 
 ### Additional arguments
 
-Additional arguments can be passed to the underlying plotting functions. For
-example, we can change `alpha`:
+Additional arguments can be passed to the underlying plotting functions.
+For example, we can change `alpha`:
 
-```R
-SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
-                        alpha = 0.5)
-```
+    SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                            alpha = 0.5)
 
-![Example of SpatialFeaturePlotBlend plot with alpha = 0.5](images/SpatialFeaturePlotBlend_single_sample_example_alpha.png "SpatialFeaturePlotBlend example with alpha = 0.5")
+![](README_files/figure-markdown_strict/additional_arguments-1.png)
 
 ## Bugs
 
-There are probably bugs in this implementation and it has not been rigorously
-tested, so please use at your own risk! If you do identify a bug, please submit
-it as an issue
+There are probably bugs in this implementation and it has not been
+rigorously tested, so please use at your own risk! If you do identify a
+bug, please submit it as an issue
 [here](https://github.com/george-hall-ucl/SpatialFeaturePlotBlend/issues).
 
 ## Licensing
 
 <details>
-<summary>Click to reveal licensing information</summary>
+<summary>
+Click to reveal licensing information
+</summary>
+
     Copyright (C) 2024 University College London, licensed under GNU General
     Public License v3.0.
 
@@ -119,4 +130,5 @@ it as an issue
 
     You should have received a copy of the GNU General Public License along
     with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 </details>
