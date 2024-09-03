@@ -44,12 +44,6 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
 
     plot_list_outer <- list()
 
-    object$image_id <- unlist(lapply(Images(object),
-                                        function(x) {
-                                            rep(x, nrow(object[[x]]@coordinates))
-                                        }))
-
-
     for (i in Images(object)) {
         plot_list <- lapply(features,
                             function(feature) {
@@ -63,7 +57,12 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                     blend_plot_theme
                             })
 
-        cells_obj_sub <- subset(object, image_id == i)
+        cell_barcodes <- Seurat:::CellsByImage(object, images = i,
+                                               unlist = TRUE)
+        cells_obj_sub <- object[, cell_barcodes]
+        images_sub_list <- list(object[[i]])
+        names(images_sub_list) <- i
+        cells_obj_sub@images <- images_sub_list
         dat <- FetchData(cells_obj_sub, features)
         side_length <- 100
         col_grid <- gen_color_grid(side_length, bottom_left, bottom_right,
