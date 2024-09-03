@@ -63,13 +63,7 @@ processing.
 
 ![](README_files/figure-markdown_strict/multiple_images-1.png)
 
-Notes:
-
--   The color scales of each image are independent.
--   `SpatialFeaturePlotBlend` assumes that the spots in the data of
-    `object` are grouped together in the same order as the image names
-    in `Images(object)` (as should happen following `merge`). If this
-    assumption is violated, then strange things might happen…
+Note that the color scales of each image are independent.
 
 ### Non-default assays
 
