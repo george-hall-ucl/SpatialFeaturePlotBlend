@@ -43,6 +43,16 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
         return(p)
     }
 
+    extract_colors_from_ggplot <- function(p) {
+        built <- ggplot_build(p)$data[[1]]
+        if (!is.na(built[1, "fill"])) {
+            col_to_use <- "fill"
+        } else {
+            col_to_use <- "colour"
+        }
+        return(built[, col_to_use])
+    }
+
     if (length(features) != 2) {
         stop(paste(c("Incorrect number of features. ",
                      "Requires two features, received ",
@@ -77,6 +87,9 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                         ggtitle(feature) +
                                         blend_plot_theme
                                 })
+            colors_list <- lapply(plot_list, extract_colors_from_ggplot)
+
+            # Now construct the blended plot
             dat <- FetchData(cells_obj_sub, features)
             side_length <- 100
             col_grid <- gen_color_grid(side_length, bottom_left, bottom_right,
@@ -85,10 +98,10 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                               function(x) {
                                   round((side_length - 1) * x / max(x)) + 1
                               })
-            colors <- sapply(seq_len(nrow(dat_norm)),
-                             function(x) {
-                                 col_grid[dat_norm[x, 1], dat_norm[x, 2]]
-                             })
+            colors_list[[3]] <- sapply(seq_len(nrow(dat_norm)),
+                                       function(x) {
+                                           col_grid[dat_norm[x, 1], dat_norm[x, 2]]
+                                       })
             legend_grid <- expand.grid(seq(from = min(dat[, features[1]]),
                                            to = max(dat[, features[1]]),
                                            length.out = side_length),
@@ -114,6 +127,9 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                         ylab(ifelse(is.null(feature_2_alt_name),
                                     features[2], feature_2_alt_name))
         } else {
+            if (top_right != "#FFFF00") {
+                warning("Cannot alter color in top right corner when use_seurat_backend is TRUE")
+            }
             vis_reduc <- cells_obj_sub@images[[i]]@coordinates[, c(3, 2)]
             colnames(vis_reduc) <- c("vis_1", "vis_2")
             vis_reduc$vis_2 <- -1 * vis_reduc$vis_2
@@ -121,14 +137,20 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                                                  key = "vis_")
             seurat_fp <- FeaturePlot(cells_obj_sub, features = features,
                                      reduction = "vis", blend = TRUE,
-                                     cols = c(bottom_left, top_left, top_right),
-                                     ...)
-            colors <- ggplot_build(seurat_fp[[3]])$data[[1]]$colour
+                                     cols = c(bottom_left, bottom_right, top_left),
+                                     combine = FALSE, ...)
+            colors_list <- lapply(seurat_fp[1:3], extract_colors_from_ggplot)
             legend <- seurat_fp[[4]]
         }
 
-        plot_list[[3]] <- custom_color_SpatialDimPlot(cells_obj_sub, i,
-                                                      new_md_column, colors)
+        names(colors_list) <- c(features, paste0(features[1], "_", features[2]))
+        plot_list <- lapply(names(colors_list),
+                            function(x) {
+                                custom_color_SpatialDimPlot(cells_obj_sub, i,
+                                                            x,
+                                                            colors_list[[x]])
+                            })
+
         plot_list[[4]] <- wrap_plots(ggplot() + theme_void(), legend,
                                      ggplot() + theme_void(), ncol = 1,
                                      heights = c(0.2, 0.6, 0.2))
