@@ -81,7 +81,7 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                     max_color <- ifelse(feature == features[1],
                                                         bottom_right, top_left)
                                     SpatialFeaturePlot(object, feature,
-                                                       images = i, sfp_arguments) +
+                                                       images = i, sfp_extra_arguments) +
                                         scale_fill_gradient(low = bottom_left,
                                                             high = max_color) +
                                         ggtitle(feature) +
