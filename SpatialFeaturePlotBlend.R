@@ -63,6 +63,10 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
         DefaultAssay(object) <- assay
     }
 
+    if ((length(fp_extra_arguments) > 0) & (!use_seurat_backend)) {
+        warning("fp_extra_arguments is non-empty but use_seurat_backend is FALSE, so it will be ignored")
+    }
+
     blend_plot_theme <- theme(legend.position = "none",
                               plot.title = element_text(hjust = 0.5))
 
