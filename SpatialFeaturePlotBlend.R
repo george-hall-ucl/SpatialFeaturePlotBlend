@@ -5,7 +5,9 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                     bottom_right = "#FF0000",
                                     top_left = "#00FF00",
                                     top_right = "#FFFF00",
-                                    use_seurat_backend = FALSE, fp_extra_arguments = list(), sfp_extra_arguments = list())  {
+                                    use_seurat_backend = FALSE,
+                                    fp_extra_arguments = list(),
+                                    sfp_extra_arguments = list())  {
 
     # Generate a grid of RGB color values given the requested corner colours.
     gen_color_grid <- function(side_length, bottom_left, bottom_right,
@@ -85,7 +87,8 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                                     max_color <- ifelse(feature == features[1],
                                                         bottom_right, top_left)
                                     SpatialFeaturePlot(object, feature,
-                                                       images = i, sfp_extra_arguments) +
+                                                       images = i,
+                                                       sfp_extra_arguments) +
                                         scale_fill_gradient(low = bottom_left,
                                                             high = max_color) +
                                         ggtitle(feature) +
@@ -104,7 +107,8 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
                               })
             colors_list[[3]] <- sapply(seq_len(nrow(dat_norm)),
                                        function(x) {
-                                           col_grid[dat_norm[x, 1], dat_norm[x, 2]]
+                                           col_grid[dat_norm[x, 1],
+                                                    dat_norm[x, 2]]
                                        })
             legend_grid <- expand.grid(seq(from = min(dat[, features[1]]),
                                            to = max(dat[, features[1]]),
@@ -118,31 +122,41 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
             names(legend_colors) <- legend_colors
 
             legend <- ggplot(legend_grid,
-                             aes(x = .data[[features[1]]], y = .data[[features[2]]],
+                             aes(x = .data[[features[1]]],
+                                 y = .data[[features[2]]],
                                  color = color)) +
                         geom_point(shape = 15, size = 1.9) +
                         scale_color_manual(values = legend_colors) +
                         coord_cartesian(expand = FALSE) +
                         theme(legend.position = "none", aspect.ratio = 1,
                               panel.background = element_blank(),
-                              axis.text.x = element_text(angle = 45, hjust = 1)) +
+                              axis.text.x = element_text(angle = 45,
+                                                         hjust = 1)) +
                         xlab(ifelse(is.null(feature_1_alt_name),
                                     features[1], feature_1_alt_name)) +
                         ylab(ifelse(is.null(feature_2_alt_name),
                                     features[2], feature_2_alt_name))
         } else {
             if (top_right != "#FFFF00") {
-                warning("Cannot alter color in top right corner when use_seurat_backend is TRUE")
+                warning(paste("Cannot alter color in top right corner when",
+                              "use_seurat_backend is TRUE"))
             }
             vis_reduc <- cells_obj_sub@images[[i]]@coordinates[, c(3, 2)]
             colnames(vis_reduc) <- c("vis_1", "vis_2")
             vis_reduc$vis_2 <- -1 * vis_reduc$vis_2
-            cells_obj_sub@reductions$vis <- CreateDimReducObject(embeddings = as.matrix(vis_reduc),
-                                                                 key = "vis_")
-            seurat_fp <- do.call(FeaturePlot, c(list(object = cells_obj_sub, features = features,
-                                     reduction = "vis", blend = TRUE,
-                                     cols = c(bottom_left, bottom_right, top_left),
-                                     combine = FALSE), fp_extra_arguments))
+            vis_reduc_mat <- as.matrix(vis_reduc)
+            vis_reduc_obj <- CreateDimReducObject(embeddings = vis_reduc_mat,
+                                                  key = "vis_")
+            cells_obj_sub@reductions$vis <- vis_reduc_obj
+            seurat_fp <- do.call(FeaturePlot, c(list(object = cells_obj_sub,
+                                                     features = features,
+                                                     reduction = "vis",
+                                                     blend = TRUE,
+                                                     cols = c(bottom_left,
+                                                              bottom_right,
+                                                              top_left),
+                                                     combine = FALSE),
+                                                fp_extra_arguments))
             colors_list <- lapply(seurat_fp[1:3], extract_colors_from_ggplot)
             legend <- seurat_fp[[4]]
         }
@@ -150,10 +164,10 @@ SpatialFeaturePlotBlend <- function(object, features, combine = TRUE,
         names(colors_list) <- c(features, paste0(features[1], "_", features[2]))
         plot_list <- lapply(names(colors_list),
                             function(x) {
-                                do.call(custom_color_SpatialDimPlot, c(list(cells_obj = cells_obj_sub, i,
-                                                            x,
-                                                            colors_list[[x]]),
-                                                            sfp_extra_arguments))
+                                do.call(custom_color_SpatialDimPlot,
+                                        c(list(cells_obj = cells_obj_sub, i,
+                                               x, colors_list[[x]]),
+                                          sfp_extra_arguments))
                             })
 
         plot_list[[4]] <- wrap_plots(ggplot() + theme_void(), legend,
