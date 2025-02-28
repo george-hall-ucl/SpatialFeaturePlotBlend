@@ -88,12 +88,44 @@ these alternative names are only used in labelling the legend.
 ### Additional arguments
 
 Additional arguments can be passed to the underlying plotting functions.
-For example, we can change `alpha`:
+Arguments accepted by `SpatialFeaturePlot` can be passed in the
+`sfp_extra_arguments` list. For example, we can change `alpha` and
+`pt.size.factor`:
 
     SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
-                            alpha = 0.5)
+                            sfp_extra_arguments = list(alpha = 0.5,
+                                                       pt.size.factor = 3))
 
 ![](README_files/figure-markdown_strict/additional_arguments-1.png)
+
+Arguments accepted by `FeaturePlot` but not by `SpatialFeaturePlot` can
+be passed using the `fp_extra_arguments` list. This computes the colors
+using a standard `FeaturePlot` with `blend = TRUE`. For example, to use
+alter `blend.threshold` (the top plot uses the default value, the bottom
+uses `0.05`):
+
+    p1 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                                  fp_extra_arguments = list(blend.threshold = 0.5))
+    p2 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                                  fp_extra_arguments = list(blend.threshold = 0.05))
+    p1 + p2
+
+![](README_files/figure-markdown_strict/fp_extra_arguments-1.png)
+
+Using FeaturePlot to compute colors (called using the “Seurat backend”,
+activated by setting `use_seurat_backend = TRUE`) could be carried out
+for all plots, but the resulting color scale is lower resolution.
+Therefore the default is to avoid using this option unless necessary.
+For comparison, below is the same plot both with (top) and without
+(bottom, default) the Seurat backend:
+
+    p1 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                                  use_seurat_backend = TRUE)
+    p2 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                                  use_seurat_backend = FALSE)
+    p1 + p2
+
+![](README_files/figure-markdown_strict/seurat_backend-1.png)
 
 ## Bugs
 

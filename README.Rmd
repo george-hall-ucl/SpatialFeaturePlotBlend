@@ -101,12 +101,43 @@ SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
 
 ### Additional arguments
 
-Additional arguments can be passed to the underlying plotting functions. For
-example, we can change `alpha`:
+Additional arguments can be passed to the underlying plotting functions.
+Arguments accepted by `SpatialFeaturePlot` can be passed in the
+`sfp_extra_arguments` list. For example, we can change `alpha` and
+`pt.size.factor`:
 
 ```{r additional_arguments}
 SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
-                        alpha = 0.5)
+                        sfp_extra_arguments = list(alpha = 0.5,
+                                                   pt.size.factor = 3))
+```
+
+Arguments accepted by `FeaturePlot` but not by `SpatialFeaturePlot` can be
+passed using the `fp_extra_arguments` list. This computes the colors using a
+standard `FeaturePlot` with `blend = TRUE`. For example, to use alter
+`blend.threshold` (the top plot uses the default value, the bottom uses
+`0.05`):
+
+```{r fp_extra_arguments, fig.height = 2 * base_fig_height}
+p1 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                              fp_extra_arguments = list(blend.threshold = 0.5))
+p2 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                              fp_extra_arguments = list(blend.threshold = 0.05))
+p1 + p2
+```
+
+Using FeaturePlot to compute colors (called using the "Seurat backend",
+activated by setting `use_seurat_backend = TRUE`) could be carried out for all
+plots, but the resulting color scale is lower resolution. Therefore the default
+is to avoid using this option unless necessary. For comparison, below is the
+same plot both with (top) and without (bottom, default) the Seurat backend:
+
+```{r seurat_backend, fig.height = 2 * base_fig_height}
+p1 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                              use_seurat_backend = TRUE)
+p2 <- SpatialFeaturePlotBlend(object = brain, features = c("Hpca", "Ttr"),
+                              use_seurat_backend = FALSE)
+p1 + p2
 ```
 
 ## Bugs
